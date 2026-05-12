@@ -1,0 +1,477 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+
+env:
+  # Python version
+  PYTHON_VERSION: '3.11'
+  
+  # C++ compiler
+  CXX: 'clang++'
+  CC: 'clang'
+  
+  # Build type
+  BUILD_TYPE: 'Release'
+  
+  # Conan settings
+  CONAN_REMOTES: 'https://center.conan.io'
+  CONAN_USER_HOME: '/tmp/conan'
+
+jobs:
+  # Job for Linux builds
+  linux-build:
+    name: Linux (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.11', '3.12']
+        include:
+          - os: ubuntu-latest
+            conan_profile: linux
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            python3-dev \
+            libpython3-dev \
+            clang \
+            clang-tidy \
+            clang-format \
+            lld \
+            ccache \
+            doxygen \
+            graphviz
+
+      - name: Install uv (modern Python package manager)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup Python environment
+        run: |
+          uv venv .venv --python ${{ matrix.python-version }}
+          source .venv/bin/activate
+          uv pip install -e .[dev]
+
+      - name: Install Conan
+        run: |
+          source .venv/bin/activate
+          pip install conan
+
+      - name: Setup Conan profile
+        run: |
+          source .venv/bin/activate
+          conan profile detect --force
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+          conan profile update settings.cppstd=23 default
+          conan profile update settings.compiler.version=17 default
+          conan profile update settings.compiler=clang default
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+            -DCMAKE_CXX_EXTENSIONS=OFF \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="$CONAN_USER_HOME" \
+            -DCMAKE_MODULE_PATH="$CONAN_USER_HOME"
+
+      - name: Build project
+        run: |
+          cd build
+          ninja -j$(nproc)
+
+      - name: Run C++ tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Run Python tests
+        run: |
+          source .venv/bin/activate
+          python -m pytest python/tests/ -v --benchmark-skip
+
+      - name: Run code quality checks
+        run: |
+          source .venv/bin/activate
+          pre-commit run --all-files
+
+      - name: Run clang-tidy
+        run: |
+          find src include -name "*.cpp" -o -name "*.hpp" | \
+            xargs clang-tidy -p build --warnings-as-errors='*'
+
+      - name: Build documentation
+        run: |
+          source .venv/bin/activate
+          uv pip install sphinx sphinx-rtd-theme
+          sphinx-build -b html docs docs/_build/html 2>/dev/null || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            build/Testing/**/*.xml
+            .pytest_cache/
+          retention-days: 7
+
+      - name: Upload documentation
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-${{ matrix.os }}
+          path: docs/_build/html/
+          retention-days: 7
+
+  # Job for macOS builds
+  macos-build:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          brew update
+          brew install cmake ninja ccache llvm
+          echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup Python environment
+        run: |
+          uv venv .venv --python ${{ env.PYTHON_VERSION }}
+          source .venv/bin/activate
+          uv pip install -e .[dev]
+
+      - name: Install Conan
+        run: |
+          source .venv/bin/activate
+          pip install conan
+
+      - name: Setup Conan profile
+        run: |
+          source .venv/bin/activate
+          conan profile detect --force
+          conan profile update settings.compiler.libcxx=libc++ default
+          conan profile update settings.cppstd=23 default
+          conan profile update settings.compiler.version=17 default
+          conan profile update settings.compiler=apple-clang default
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+            -DCMAKE_CXX_EXTENSIONS=OFF \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="$CONAN_USER_HOME" \
+            -DCMAKE_MODULE_PATH="$CONAN_USER_HOME"
+
+      - name: Build project
+        run: |
+          cd build
+          ninja -j$(sysctl -n hw.ncpu)
+
+      - name: Run C++ tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Run Python tests
+        run: |
+          source .venv/bin/activate
+          python -m pytest python/tests/ -v --benchmark-skip
+
+  # Job for Windows builds
+  windows-build:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install ninja
+          choco install llvm
+
+      - name: Install uv
+        run: |
+          powershell -Command "irm https://astral.sh/uv/install.ps1 | iex"
+          echo "$env:USERPROFILE\.cargo\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Setup Python environment
+        run: |
+          uv venv .venv --python ${{ env.PYTHON_VERSION }}
+          .venv\Scripts\activate
+          uv pip install -e .[dev]
+
+      - name: Install Conan
+        run: |
+          .venv\Scripts\activate
+          pip install conan
+
+      - name: Setup Conan profile
+        run: |
+          .venv\Scripts\activate
+          conan profile detect --force
+          conan profile update settings.compiler="msvc" default
+          conan profile update settings.compiler.version=193 default
+          conan profile update settings.compiler.cppstd=23 default
+          conan profile update settings.compiler.runtime=dynamic default
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_CXX_STANDARD=23 `
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON `
+            -DCMAKE_CXX_EXTENSIONS=OFF `
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
+            -G "Ninja" `
+            -DCMAKE_PREFIX_PATH="$env:CONAN_USER_HOME" `
+            -DCMAKE_MODULE_PATH="$env:CONAN_USER_HOME"
+
+      - name: Build project
+        run: |
+          cd build
+          ninja
+
+      - name: Run C++ tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Run Python tests
+        run: |
+          .venv\Scripts\activate
+          python -m pytest python/tests/ -v --benchmark-skip
+
+  # Job for building and publishing Python packages
+  publish-python:
+    name: Publish Python Package
+    runs-on: ubuntu-latest
+    needs: [linux-build, macos-build, windows-build]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    
+    permissions:
+      id-token: write  # Required for PyPI trusted publishing
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Build source distribution and wheels
+        run: |
+          uv venv .venv --python ${{ env.PYTHON_VERSION }}
+          source .venv/bin/activate
+          uv pip install build twine
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+
+  # Job for security scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Bandit security linter
+        run: |
+          pip install bandit
+          bandit -r python/ -f json -o bandit-results.json || true
+
+      - name: Run Semgrep security scanner
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+
+  # Job for performance benchmarking
+  performance-benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup Python environment
+        run: |
+          uv venv .venv --python ${{ env.PYTHON_VERSION }}
+          source .venv/bin/activate
+          uv pip install -e .[dev]
+          uv pip install pytest-benchmark numpy
+
+      - name: Run performance benchmarks
+        run: |
+          source .venv/bin/activate
+          python -m pytest python/tests/ -v --benchmark-only --benchmark-json benchmark-results.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results.json
+          retention-days: 30
+
+  # Job for code coverage
+  code-coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup Python environment
+        run: |
+          uv venv .venv --python ${{ env.PYTHON_VERSION }}
+          source .venv/bin/activate
+          uv pip install -e .[dev]
+          uv pip install pytest-cov coverage
+
+      - name: Configure CMake with coverage
+        run: |
+          mkdir -p build-coverage
+          cd build-coverage
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_FLAGS="--coverage" \
+            -DCMAKE_EXE_LINKER_FLAGS="--coverage" \
+            -G Ninja
+
+      - name: Build with coverage
+        run: |
+          cd build-coverage
+          ninja
+
+      - name: Run tests with coverage
+        run: |
+          cd build-coverage
+          ctest --output-on-failure
+          source ../.venv/bin/activate
+          python -m pytest ../python/tests/ -v --cov=viscopuppy --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml,./build-coverage/coverage.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false

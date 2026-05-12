@@ -1,0 +1,455 @@
+---
+Checks: >
+    *,
+    -abseil-*,
+    -altera-*,
+    -android-*,
+    -fuchsia-*,
+    -google-*,
+    -hicpp-*,
+    -llvm-*,
+    -llvmlibc-*,
+    -modernize-use-trailing-return-type,
+    -mpi-*,
+    -objc-*,
+    -openmp-*,
+    -zircon-*,
+    bugprone-*,
+    cert-*,
+    cppcoreguidelines-*,
+    misc-*,
+    performance-*,
+    portability-*,
+    readability-*,
+    clang-analyzer-*
+    
+WarningsAsErrors: '*'
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.MemberCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues
+    value: '0,1,2,3,4,8,16,32,64,128,256,512,1024'
+  - key: modernize-use-nodiscard.AllowedIdentifiers
+    value: 'main,operator=,operator<<,operator>>'
+  - key: bugprone-exception-escape.AllowedExceptions
+    value: 'std::exception,std::runtime_error,std::logic_error'
+  - key: bugprone-branch-clone.MaxCloneSize
+    value: '10'
+  - key: bugprone-suspicious-include.IgnoredIncludes
+    value: '*.hpp,*.h'
+  - key: bugprone-use-after-move.IgnoredTypes
+    value: 'std::unique_ptr,std::shared_ptr,std::weak_ptr'
+  - key: misc-non-private-member-variables-in-classes.IgnoredClasses
+    value: '.*Test.*,.*Fixture.*'
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: 'std::string,std::vector,std::array,std::span'
+  - key: readability-function-size.StatementThreshold
+    value: '50'
+  - key: readability-magic-numbers.IgnoredNumbers
+    value: '0,1,2,3,4,8,16,32,64,128,256,512,1024,2048,4096'
+  - key: readability-named-parameter.IgnoredParameterNames
+    value: 'unused,_,ignored'
+  - key: readability-simplify-boolean-expr.ChainedConditionalReturn
+    value: 'true'
+  - key: readability-qualified-auto.AllowCVQualified
+    value: 'true'
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: 'true'
+  - key: readability-container-size-empty.IgnoredContainers
+    value: 'std::string,std::vector,std::array,std::deque,std::list,std::forward_list,std::set,std::multiset,std::unordered_set,std::unordered_multiset,std::map,std::multimap,std::unordered_map,std::unordered_multimap'
+  - key: cppcoreguidelines-pro-type-member-init.IgnoreArrays
+    value: 'true'
+  - key: cppcoreguidelines-pro-bounds-array-to-pointer-decay.AllowArrayToPointerDecay
+    value: 'true'
+  - key: cppcoreguidelines-pro-bounds-pointer-arithmetic.AllowPointerArithmetic
+    value: 'true'
+  - key: cppcoreguidelines-pro-type-vararg.AllowVariadicFunctions
+    value: 'printf,scanf,fprintf,fscanf,sprintf,sscanf,vprintf,vscanf,vfprintf,vfscanf,vsprintf,vsscanf'
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveOperations
+    value: 'true'
+  - key: cppcoreguidelines-avoid-non-const-global-variables.IgnoredVariableNames
+    value: '.*[Tt]est.*,.*[Ff]ixture.*,.*[Ee]xample.*'
+  - key: cppcoreguidelines-prefer-member-initializer.IgnoreMacros
+    value: 'true'
+  - key: cppcoreguidelines-avoid-c-arrays.AllowCArrays
+    value: 'true'
+  - key: cppcoreguidelines-avoid-goto.AllowGoto
+    value: 'false'
+  - key: cppcoreguidelines-no-malloc.AllowMalloc
+    value: 'false'
+  - key: cppcoreguidelines-owning-memory.AllowNewDelete
+    value: 'false'
+  - key: cppcoreguidelines-pro-bounds-constant-array-index.AllowOutOfBounds
+    value: 'false'
+  - key: cppcoreguidelines-pro-type-union-access.AllowUnionAccess
+    value: 'false'
+  - key: cppcoreguidelines-pro-type-reinterpret-cast.AllowReinterpretCast
+    value: 'false'
+  - key: cppcoreguidelines-pro-type-const-cast.AllowConstCast
+    value: 'false'
+  - key: cppcoreguidelines-pro-type-cstyle-cast.AllowCStyleCast
+    value: 'false'
+  - key: bugprone-reserved-identifier.AllowReservedIdentifiers
+    value: 'false'
+  - key: bugprone-signed-char-misuse.AllowSignedChar
+    value: 'true'
+  - key: bugprone-too-small-loop-variable.AllowSmallLoopVariables
+    value: 'true'
+  - key: bugprone-unused-raii.AllowUnusedRAII
+    value: 'false'
+  - key: bugprone-unused-return-value.AllowUnusedReturnValue
+    value: 'false'
+  - key: bugprone-virtual-near-miss.AllowVirtualNearMiss
+    value: 'true'
+  - key: misc-definitions-in-headers.AllowDefinitionsInHeaders
+    value: 'true'
+  - key: misc-misplaced-const.AllowMisplacedConst
+    value: 'false'
+  - key: misc-new-delete-overloads.AllowNewDeleteOverloads
+    value: 'false'
+  - key: misc-no-recursion.AllowRecursion
+    value: 'true'
+  - key: misc-redundant-expression.AllowRedundantExpression
+    value: 'false'
+  - key: misc-static-assert.AllowStaticAssert
+    value: 'true'
+  - key: misc-throw-by-value-catch-by-reference.AllowThrowByValueCatchByReference
+    value: 'true'
+  - key: misc-unconventional-assign-operator.AllowUnconventionalAssignOperator
+    value: 'false'
+  - key: misc-unused-alias-decls.AllowUnusedAliasDecls
+    value: 'true'
+  - key: misc-unused-parameters.AllowUnusedParameters
+    value: 'true'
+  - key: misc-unused-using-decls.AllowUnusedUsingDecls
+    value: 'true'
+  - key: performance-for-range-copy.AllowForRangeCopy
+    value: 'false'
+  - key: performance-implicit-conversion-in-loop.AllowImplicitConversionInLoop
+    value: 'false'
+  - key: performance-inefficient-algorithm.AllowInefficientAlgorithm
+    value: 'false'
+  - key: performance-inefficient-string-concatenation.AllowInefficientStringConcatenation
+    value: 'false'
+  - key: performance-inefficient-vector-operation.AllowInefficientVectorOperation
+    value: 'false'
+  - key: performance-move-const-arg.AllowMoveConstArg
+    value: 'false'
+  - key: performance-move-constructor-init.AllowMoveConstructorInit
+    value: 'true'
+  - key: performance-no-automatic-move.AllowAutomaticMove
+    value: 'true'
+  - key: performance-noexcept-move-constructor.AllowNoexceptMoveConstructor
+    value: 'true'
+  - key: performance-trivially-destructible.AllowTriviallyDestructible
+    value: 'true'
+  - key: performance-type-promotion-in-math-fn.AllowTypePromotionInMathFn
+    value: 'true'
+  - key: performance-unnecessary-copy-initialization.AllowUnnecessaryCopyInitialization
+    value: 'false'
+  - key: performance-unnecessary-value-param.AllowUnnecessaryValueParam
+    value: 'false'
+  - key: portability-restrict-system-includes.AllowSystemIncludes
+    value: 'true'
+  - key: portability-simd-intrinsics.AllowSIMDIntrinsics
+    value: 'true'
+  - key: readability-avoid-const-params-in-decls.AllowConstParamsInDecls
+    value: 'true'
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '1'
+  - key: readability-const-return-type.AllowConstReturnType
+    value: 'true'
+  - key: readability-convert-member-functions-to-static.AllowMemberFunctionsToStatic
+    value: 'true'
+  - key: readability-delete-null-pointer.AllowDeleteNullPointer
+    value: 'true'
+  - key: readability-else-after-return.AllowElseAfterReturn
+    value: 'false'
+  - key: readability-function-cognitive-complexity.Threshold
+    value: '25'
+  - key: readability-identifier-length.ShortNameThreshold
+    value: '3'
+  - key: readability-inconsistent-declaration-parameter-name.AllowInconsistentDeclarationParameterName
+    value: 'false'
+  - key: readability-isolate-declaration.AllowIsolateDeclaration
+    value: 'true'
+  - key: readability-make-member-function-const.AllowMakeMemberFunctionConst
+    value: 'true'
+  - key: readability-misleading-indentation.AllowMisleadingIndentation
+    value: 'false'
+  - key: readability-misplaced-array-index.AllowMisplacedArrayIndex
+    value: 'false'
+  - key: readability-non-const-parameter.AllowNonConstParameter
+    value: 'true'
+  - key: readability-redundant-access-specifiers.AllowRedundantAccessSpecifiers
+    value: 'false'
+  - key: readability-redundant-control-flow.AllowRedundantControlFlow
+    value: 'false'
+  - key: readability-redundant-declaration.AllowRedundantDeclaration
+    value: 'false'
+  - key: readability-redundant-function-ptr-dereference.AllowRedundantFunctionPtrDereference
+    value: 'false'
+  - key: readability-redundant-member-init.AllowRedundantMemberInit
+    value: 'false'
+  - key: readability-redundant-preprocessor.AllowRedundantPreprocessor
+    value: 'false'
+  - key: readability-redundant-smartptr-get.AllowRedundantSmartptrGet
+    value: 'false'
+  - key: readability-redundant-string-cstr.AllowRedundantStringCstr
+    value: 'false'
+  - key: readability-redundant-string-init.AllowRedundantStringInit
+    value: 'false'
+  - key: readability-simplify-subscript-expr.AllowSimplifySubscriptExpr
+    value: 'true'
+  - key: readability-static-accessed-through-instance.AllowStaticAccessedThroughInstance
+    value: 'false'
+  - key: readability-static-definition-in-anonymous-namespace.AllowStaticDefinitionInAnonymousNamespace
+    value: 'true'
+  - key: readability-string-compare.AllowStringCompare
+    value: 'false'
+  - key: readability-uniqueptr-delete-release.AllowUniqueptrDeleteRelease
+    value: 'false'
+  - key: readability-uppercase-literal-suffix.AllowUppercaseLiteralSuffix
+    value: 'true'
+  - key: readability-use-anyofallof.AllowUseAnyofallof
+    value: 'true'
+  - key: cert-dcl21-cpp.AllowDcl21Cpp
+    value: 'true'
+  - key: cert-dcl50-cpp.AllowDcl50Cpp
+    value: 'true'
+  - key: cert-dcl58-cpp.AllowDcl58Cpp
+    value: 'true'
+  - key: cert-env33-c.AllowEnv33C
+    value: 'true'
+  - key: cert-err34-c.AllowErr34C
+    value: 'true'
+  - key: cert-err52-cpp.AllowErr52Cpp
+    value: 'true'
+  - key: cert-err58-cpp.AllowErr58Cpp
+    value: 'true'
+  - key: cert-err60-cpp.AllowErr60Cpp
+    value: 'true'
+  - key: cert-err61-cpp.AllowErr61Cpp
+    value: 'true'
+  - key: cert-msc30-c.AllowMsc30C
+    value: 'true'
+  - key: cert-msc32-c.AllowMsc32C
+    value: 'true'
+  - key: cert-oop11-cpp.AllowOop11Cpp
+    value: 'true'
+  - key: cert-oop54-cpp.AllowOop54Cpp
+    value: 'true'
+  - key: cert-oop57-cpp.AllowOop57Cpp
+    value: 'true'
+  - key: cert-oop58-cpp.AllowOop58Cpp
+    value: 'true'
+  - key: cert-str34-c.AllowStr34C
+    value: 'true'
+  - key: cert-str50-cpp.AllowStr50Cpp
+    value: 'true'
+  - key: cert-str51-cpp.AllowStr51Cpp
+    value: 'true'
+  - key: cert-str52-cpp.AllowStr52Cpp
+    value: 'true'
+  - key: cert-str53-cpp.AllowStr53Cpp
+    value: 'true'
+  - key: cert-str54-cpp.AllowStr54Cpp
+    value: 'true'
+  - key: clang-analyzer-core.CallAndMessage
+    value: 'true'
+  - key: clang-analyzer-core.DivideZero
+    value: 'true'
+  - key: clang-analyzer-core.NullDereference
+    value: 'true'
+  - key: clang-analyzer-core.StackAddressEscape
+    value: 'true'
+  - key: clang-analyzer-core.UndefinedBinaryOperatorResult
+    value: 'true'
+  - key: clang-analyzer-core.VLASize
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.ArraySubscript
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.Assign
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.Branch
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.CapturedBlockVariable
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.UndefReturn
+    value: 'true'
+  - key: clang-analyzer-cplusplus.InnerPointer
+    value: 'true'
+  - key: clang-analyzer-cplusplus.Move
+    value: 'true'
+  - key: clang-analyzer-cplusplus.NewDelete
+    value: 'true'
+  - key: clang-analyzer-cplusplus.NewDeleteLeaks
+    value: 'true'
+  - key: clang-analyzer-cplusplus.PlacementNew
+    value: 'true'
+  - key: clang-analyzer-cplusplus.SmartPtr
+    value: 'true'
+  - key: clang-analyzer-deadcode.DeadStores
+    value: 'true'
+  - key: clang-analyzer-nullability.NullPassedToNonnull
+    value: 'true'
+  - key: clang-analyzer-nullability.NullReturnedFromNonnull
+    value: 'true'
+  - key: clang-analyzer-optin.cplusplus.VirtualCall
+    value: 'true'
+  - key: clang-analyzer-optin.mpi.MPI-Checker
+    value: 'true'
+  - key: clang-analyzer-optin.osx.cocoa.localizability.EmptyLocalizationContextChecker
+    value: 'true'
+  - key: clang-analyzer-optin.performance.Padding
+    value: 'true'
+  - key: clang-analyzer-optin.portability.UnixAPI
+    value: 'true'
+  - key: clang-analyzer-security.FloatLoopCounter
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bcmp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bcopy
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bzero
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.getpw
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.gets
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.mkstemp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.mktemp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.rand
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.strcpy
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.vfork
+    value: 'true'
+  - key: clang-analyzer-unix.API
+    value: 'true'
+  - key: clang-analyzer-unix.Malloc
+    value: 'true'
+  - key: clang-analyzer-unix.MallocSizeof
+    value: 'true'
+  - key: clang-analyzer-unix.Vfork
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.BadSizeArg
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.NullArg
+    value: 'true'
+  - key: clang-analyzer-valist.CopyToSelf
+    value: 'true'
+  - key: clang-analyzer-valist.Uninitialized
+    value: 'true'
+  - key: clang-analyzer-valist.Unterminated
+    value: 'true'
+  - key: clang-analyzer-core.StackAddressEscape
+    value: 'true'
+  - key: clang-analyzer-core.UndefinedBinaryOperatorResult
+    value: 'true'
+  - key: clang-analyzer-core.VLASize
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.ArraySubscript
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.Assign
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.Branch
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.CapturedBlockVariable
+    value: 'true'
+  - key: clang-analyzer-core.uninitialized.UndefReturn
+    value: 'true'
+  - key: clang-analyzer-cplusplus.InnerPointer
+    value: 'true'
+  - key: clang-analyzer-cplusplus.Move
+    value: 'true'
+  - key: clang-analyzer-cplusplus.NewDelete
+    value: 'true'
+  - key: clang-analyzer-cplusplus.NewDeleteLeaks
+    value: 'true'
+  - key: clang-analyzer-cplusplus.PlacementNew
+    value: 'true'
+  - key: clang-analyzer-cplusplus.SmartPtr
+    value: 'true'
+  - key: clang-analyzer-deadcode.DeadStores
+    value: 'true'
+  - key: clang-analyzer-nullability.NullPassedToNonnull
+    value: 'true'
+  - key: clang-analyzer-nullability.NullReturnedFromNonnull
+    value: 'true'
+  - key: clang-analyzer-optin.cplusplus.VirtualCall
+    value: 'true'
+  - key: clang-analyzer-optin.mpi.MPI-Checker
+    value: 'true'
+  - key: clang-analyzer-optin.osx.cocoa.localizability.EmptyLocalizationContextChecker
+    value: 'true'
+  - key: clang-analyzer-optin.performance.Padding
+    value: 'true'
+  - key: clang-analyzer-optin.portability.UnixAPI
+    value: 'true'
+  - key: clang-analyzer-security.FloatLoopCounter
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bcmp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bcopy
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.bzero
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.getpw
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.gets
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.mkstemp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.mktemp
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.rand
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.strcpy
+    value: 'true'
+  - key: clang-analyzer-security.insecureAPI.vfork
+    value: 'true'
+  - key: clang-analyzer-unix.API
+    value: 'true'
+  - key: clang-analyzer-unix.Malloc
+    value: 'true'
+  - key: clang-analyzer-unix.MallocSizeof
+    value: 'true'
+  - key: clang-analyzer-unix.Vfork
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.BadSizeArg
+    value: 'true'
+  - key: clang-analyzer-unix.cstring.NullArg
+    value: 'true'
+  - key: clang-analyzer-valist.CopyToSelf
+    value: 'true'
+  - key: clang-analyzer-valist.Uninitialized
+    value: 'true'
+  - key: clang-analyzer-valist.Unterminated
+    value: 'true'
+    
+HeaderFilterRegex: '.*'
+FormatStyle: file
+...
