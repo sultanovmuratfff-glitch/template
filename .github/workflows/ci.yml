@@ -45,30 +45,32 @@ jobs:
           compiler=gcc
           compiler.cppstd=gnu23
           compiler.libcxx=libstdc++11
-          compiler.version=15
-          os=Linux" > /home/runner/.conan2/profiles/default
+          compiler.version=13
+          os=Linux" > ~/.conan2/profiles/default
 
-      - name: Run conan install to generate toolchain
+      - name: Create build directory and run conan install
         run: |
-          # Output directly into the folder expected by your CMakeLists.txt
           mkdir -p build/Release
-          conan install . \
-            --output-folder=build/Release \
+          cd build/Release
+          conan install ../.. \
+            --output-folder=. \
             --build=missing \
             -s build_type=Release
 
       - name: Configure CMake for C++ tests
         run: |
           cd build/Release
-
           cmake ../.. \
             -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=./conan_toolchain.cmake \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -G "Unix Makefiles"
 
+      - name: Build C++ tests
+        run: |
+          cd build/Release
           make -j$(nproc)
 
       - name: Install uv (fast Python package installer)
@@ -84,7 +86,7 @@ jobs:
 
       - name: Run C++ tests
         run: |
-          cd build
+          cd build/Release
           ctest --output-on-failure
 
       - name: Run Python tests
