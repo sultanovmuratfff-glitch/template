@@ -58,18 +58,18 @@ jobs:
             -s build_type=Release
 
       - name: Configure CMake for C++ tests
-        run: >
-          cd build/build/Release
-          cmake ../../.. \
+        run: |
+          cd build/Release
+
+          cmake ../.. \
             -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=../../generators/conan_toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -G "Unix Makefiles"
 
           make -j$(nproc)
-
 
       - name: Install uv (fast Python package installer)
         run: |
