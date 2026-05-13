@@ -34,10 +34,15 @@ jobs:
             python3-dev \
             libpython3-dev
 
-      - name: Install Conan and create matching profile
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup Conan and build
         run: |
           pip install conan
+
           conan profile detect --force --name=default
+
           echo "[settings]
           arch=x86_64
           build_type=Release
@@ -47,18 +52,14 @@ jobs:
           compiler.version=13
           os=Linux" > ~/.conan2/profiles/default
 
-      - name: Conan install and build project
-        run: |
           conan install . \
             --output-folder=. \
             --build=missing \
             -o with_tests=True \
-            -s build_type=Release
+            -s build_type=Release 
 
-      - name: Install uv (fast Python package installer)
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          cmake --preset conan-release
+          cmake --build --preset conan-release
 
       - name: Setup Python environment and install package
         run: |
