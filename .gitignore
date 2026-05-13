@@ -19,7 +19,7 @@ Makefile
 *.ninja
 .ninja_deps
 .ninja_log
-CMakePresets.json
+CMakeUserPresets.json
 
 # Conan
 .conan/
@@ -72,3 +72,4 @@ local.*
 # UV
 .uv/
 uv.lock
+CMakeUserPresets.json
