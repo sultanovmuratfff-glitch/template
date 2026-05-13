@@ -19,6 +19,7 @@ Makefile
 *.ninja
 .ninja_deps
 .ninja_log
+CMakePresets.json
 
 # Conan
 .conan/
