@@ -50,9 +50,7 @@ jobs:
 
       - name: Create build directory and run conan install
         run: |
-          mkdir -p build/Release
-          cd build/Release
-          conan install ../.. \
+          conan install . \
             --output-folder=. \
             --build=missing \
             -s build_type=Release
@@ -63,7 +61,7 @@ jobs:
           cmake ../.. \
             -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=./conan_toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=./generators/conan_toolchain.cmake \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -G "Unix Makefiles"
