@@ -20,6 +20,7 @@
 
 namespace nb = nanobind;
 using namespace nb::literals;
+using namespace viscopuppy;
 
 namespace viscopuppy::python {
 
@@ -92,9 +93,8 @@ NB_MODULE(viscopuppy, m) {
             return viscopuppy::python::vector_to_ndarray(std::move(vec));
         }, "Quadrature weights w_k")
         .def_prop_ro("size", &quadrature::GaussLaguerre<Real>::size,
-            "Number of quadrature points")
-        .def_prop_ro("alpha", &quadrature::GaussLaguerre<Real>::alpha,
-            "Exponent alpha in weight function");
+            "Number of quadrature points");
+
 
     // ========================================================================
     // SOEApproximation — Sum-of-Exponentials for t^{-alpha}
@@ -121,20 +121,6 @@ NB_MODULE(viscopuppy, m) {
         .def("evaluate", &soe::SOEApproximation<Real>::evaluate,
             "t"_a,
             "Evaluate the SOE approximation at a single point t > 0.")
-        .def("evaluate_batch", [](const soe::SOEApproximation<Real>& self,
-                                  nb::ndarray<const Real, nb::ndim<1>> t_values) {
-            auto sv = std::span<const Real>(t_values.data(), t_values.shape(0));
-            auto result = self.evaluate_batch(sv);
-            return viscopuppy::python::vector_to_ndarray(std::move(result));
-        },
-            "t"_a,
-            "Batch-evaluate the SOE approximation on an array of t values.")
-        .def("evaluate_batch", [](const soe::SOEApproximation<Real>& self,
-                                  const std::vector<Real>& t_values) {
-            return self.evaluate_batch(std::span<const Real>(t_values));
-        },
-            "t"_a,
-            "Batch-evaluate the SOE approximation on a list of t values.")
         .def_prop_ro("coefficients", [](const soe::SOEApproximation<Real>& self) {
             std::vector<Real> vec(self.coefficients().begin(), self.coefficients().end());
             return viscopuppy::python::vector_to_ndarray(std::move(vec));
@@ -144,12 +130,7 @@ NB_MODULE(viscopuppy, m) {
             return viscopuppy::python::vector_to_ndarray(std::move(vec));
         }, "Exponents λ_k of the sum of exponentials")
         .def_prop_ro("size", &soe::SOEApproximation<Real>::size,
-            "Number of exponential terms")
-        .def_prop_ro("alpha", &soe::SOEApproximation<Real>::alpha,
-            "Exponent alpha")
-        .def_static("exact", &soe::SOEApproximation<Real>::exact,
-            "t"_a, "alpha"_a,
-            "Exact value of t^{-alpha} for comparison.");
+            "Number of exponential terms");
 
     // ========================================================================
     // Convenience: one-shot SOE evaluation
