@@ -9,8 +9,8 @@ nanobind_add_module(viscopuppy_python
 )
 
 
-# Link with math library
-target_link_libraries(viscopuppy_python PRIVATE mathlib)
+# Link with viscopuppy header-only library
+target_link_libraries(viscopuppy_python PRIVATE viscopuppy)
 
 # Include directories
 target_include_directories(viscopuppy_python PRIVATE

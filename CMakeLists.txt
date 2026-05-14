@@ -63,13 +63,22 @@ install(
 )
 
 install(
-    TARGETS viscopuppy viscopuppy_python
+    TARGETS viscopuppy
     EXPORT viscopuppy-targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT Runtime
 )
+
+if(VISCOPUPPY_BUILD_PYTHON)
+    install(
+        TARGETS viscopuppy_python
+        EXPORT viscopuppy-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        COMPONENT Runtime
+    )
+endif()
 
 # Export targets for find_package
 install(

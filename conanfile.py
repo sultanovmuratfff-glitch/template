@@ -19,6 +19,7 @@ class ViscopuppyConan(ConanFile):
         "fPIC": [True, False],
         "with_tests": [True, False],
         "with_examples": [True, False],
+        "with_python": [True, False],
         "with_coverage": [True, False],
         "with_sanitizers": [True, False],
         "with_lto": [True, False],
@@ -28,6 +29,7 @@ class ViscopuppyConan(ConanFile):
         "fPIC": True,
         "with_tests": False,
         "with_examples": False,
+        "with_python": False,
         "with_coverage": False,
         "with_sanitizers": False,
         "with_lto": True,
@@ -43,15 +45,14 @@ class ViscopuppyConan(ConanFile):
             self.options.rm_safe("fPIC")
 
     def requirements(self):
-        # Core dependencies
-        self.requires("nanobind/2.12.0")
-        
         # Test dependencies (only if building tests)
         if self.options.with_tests:
             self.requires("catch2/3.5.0")
         
-        # Python development dependencies
-        self.requires("pybind11/2.11.1", transitive_headers=True)
+        # Python development dependencies (only if building python bindings)
+        if self.options.with_python:
+            self.requires("nanobind/2.12.0")
+            self.requires("pybind11/2.11.1", transitive_headers=True)
 
     def validate(self):
         # Check for C++23 support
@@ -91,7 +92,9 @@ class ViscopuppyConan(ConanFile):
         tc.variables["CMAKE_CXX_EXTENSIONS"] = False
         
         # Python configuration
-        tc.variables["PYTHON_EXECUTABLE"] = self.dependencies["pybind11"].cpp_info.bindirs[0]
+        tc.variables["VISCOPUPPY_BUILD_PYTHON"] = self.options.with_python
+        if self.options.with_python:
+            tc.variables["PYTHON_EXECUTABLE"] = self.dependencies["pybind11"].cpp_info.bindirs[0]
         
         # Generator
         tc.generate()
@@ -121,14 +124,16 @@ class ViscopuppyConan(ConanFile):
         self.cpp_info.includedirs = ["include"]
         
         # Python module
-        self.cpp_info.bindirs.append(os.path.join(self.package_folder, "python", "viscopuppy"))
+        if self.options.with_python:
+            self.cpp_info.bindirs.append(os.path.join(self.package_folder, "python", "viscopuppy"))
         
         # Set system dependencies if needed
         if self.settings.os in ["Linux", "FreeBSD"]:
             self.cpp_info.system_libs = ["m", "pthread"]
         
         # Runtime requirements for Python
-        self.cpp_info.requires = ["nanobind::nanobind", "pybind11::pybind11"]
+        if self.options.with_python:
+            self.cpp_info.requires = ["nanobind::nanobind", "pybind11::pybind11"]
 
     # def package_id(self):
         # if self.options.shared:

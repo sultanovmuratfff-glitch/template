@@ -5,10 +5,10 @@ find_package(Catch2 3 REQUIRED)
 include(Catch)
 
 # Create test executable
-add_executable(test test_mathlib.cpp)
+add_executable(test test_soe.cpp)
 
-# Link with math library and Catch2
-target_link_libraries(test PRIVATE mathlib Catch2::Catch2WithMain)
+# Link with viscopuppy header-only library and Catch2
+target_link_libraries(test PRIVATE viscopuppy Catch2::Catch2WithMain)
 
 # Include directories
 target_include_directories(test PRIVATE
